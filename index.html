@@ -310,7 +310,7 @@
     // Set ?qr=<full qr.expo.dev URL> to enable the QR preview, or wire it
     // permanently by setting EAS_QR_URL below after `eas update --channel
     // preview`. Without one of these, the card shows a placeholder.
-    const EAS_QR_URL = ''; // e.g. 'https://qr.expo.dev/eas-update?projectId=...&groupId=...&slug=exp'
+    const EAS_QR_URL = 'https://qr.expo.dev/eas-update?projectId=31d0aa44-4713-44d9-91aa-c2e2c58c08ad&runtimeVersion=exposdk%3A54.0.0&channel=preview'; // e.g. 'https://qr.expo.dev/eas-update?projectId=...&groupId=...&slug=exp'
     const qrUrl = params.get('qr') || EAS_QR_URL;
 
     function renderQr(slotId) {
