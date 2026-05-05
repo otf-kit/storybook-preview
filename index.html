@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@otfdashkit/ui-native — Storybook Preview</title>
+  <meta name="description" content="Live preview of the @otfdashkit/ui-native component storybook running in a phone frame, with an Expo Go QR for native preview.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      /* Slightly warm dark — softer than pure #0a0a0a, makes the grid
+         checks read more clearly without losing the dark vibe. */
+      background-color: #1a1816;
+      background-image:
+        linear-gradient(90deg, #ffffff0d 1px, #0000 1px),
+        linear-gradient(#ffffff0d 1px, #0000 1px);
+      background-size: 32px 32px;
+      background-attachment: fixed;
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    /* Gradient overlay tones the grid down toward the bottom. Color-mixed
+       in oklab against the same bg so the fade reads cleanly. */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        to bottom in oklab,
+        color-mix(in oklab, #1a1816 20%, transparent),
+        color-mix(in oklab, #1a1816 60%, transparent)
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+    .landing { position: relative; z-index: 1; }
+
+    .landing {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      width: 100%;
+      height: 100vh;
+      padding: 0 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .phone-frame {
+      height: 96vh;
+      aspect-ratio: 475 / 998;
+      flex-shrink: 0;
+    }
+    .phone-frame svg {
+      width: 100%;
+      height: 100%;
+      /* Subtle lift — was 0 20px 40px rgba(0,0,0,0.6) which read heavy
+         against the darker bg. Lighter offset + blur + opacity now. */
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35));
+    }
+
+    /* ── QR Card (desktop) ── slimmer so the phone gets more room */
+    .qr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 240px;
+      gap: 16px;
+    }
+    .qr-card-text {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+      align-items: center;
+    }
+    .qr-card h2 {
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .qr-card p {
+      color: #888;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .qr-card-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, border-color 0.2s;
+      width: fit-content;
+    }
+    .qr-card-btn:hover { background: #1a1a1a; border-color: #444; }
+    .qr-embed-wrap {
+      width: 192px;
+      height: 224px;
+      border-radius: 14px;
+      overflow: hidden;
+      align-self: center;
+      flex-shrink: 0;
+    }
+    .qr-placeholder {
+      width: 192px;
+      height: 224px;
+      border-radius: 14px;
+      background: #1a1a1a;
+      border: 1px dashed #333;
+      align-self: center;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .qr-placeholder p {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .qr-placeholder code {
+      background: #222;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #aaa;
+      font-size: 11px;
+    }
+
+    /* ── FAB (mobile only) ── */
+    .fab {
+      display: none;
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      z-index: 100;
+      transition: transform 0.2s;
+    }
+    .fab:active { transform: scale(0.92); }
+    .fab svg { width: 26px; height: 26px; }
+
+    /* ── QR Modal (mobile) ── */
+    .qr-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .qr-modal-overlay.active { display: flex; }
+    .qr-modal {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 320px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .qr-modal h3 {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .qr-modal p {
+      color: #888;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .qr-modal .qr-embed-wrap, .qr-modal .qr-placeholder { width: 220px; height: 260px; }
+    .qr-modal-close {
+      padding: 10px 28px;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .qr-modal-close:hover { background: #1a1a1a; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .landing {
+        flex-direction: column;
+        gap: 0;
+        padding: 16px;
+      }
+      .phone-frame {
+        height: calc(100vh - 32px);
+        max-width: calc(100vw - 32px);
+      }
+      .qr-card { display: none; }
+      .fab { display: flex; }
+    }
+
+    @media (max-width: 500px) {
+      .landing { padding: 12px; }
+      .phone-frame {
+        height: calc(100vh - 24px);
+        max-width: calc(100vw - 24px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="phone-frame">
+      <svg viewBox="0 0 475 998" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="clip0_otf_phone"><rect x="13.6691" y="13.6691" width="447.662" height="970.504" rx="66.0671" fill="white"/></clipPath>
+        </defs>
+        <g clip-path="url(#clip0_otf_phone)">
+          <rect x="13.6691" y="13.6691" width="447.662" height="970.504" rx="66.0671" fill="black"/>
+          <foreignObject x="13.6691" y="13.6691" width="447.662" height="970.504">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;overflow:hidden;border-radius:66px;background:black;">
+              <iframe id="kit-iframe" style="border:0;width:100%;height:100%;background:black;display:block;" scrolling="no" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope"></iframe>
+            </div>
+          </foreignObject>
+        </g>
+        <rect x="164.598" y="26.575" width="142.386" height="41.7704" rx="20.8852" fill="black"/>
+        <rect x="9.68226" y="9.68226" width="455.635" height="978.477" rx="70.054" stroke="black" stroke-width="9.97362"/>
+        <rect x="2.84771" y="2.84771" width="469.305" height="992.146" rx="76.8885" stroke="black" stroke-width="5.69544"/>
+      </svg>
+    </div>
+
+    <div class="qr-card">
+      <div class="qr-card-text">
+        <h2>Try it in Expo Go (SDK 54)</h2>
+        <p>Scan the QR with the Camera app (iOS) or Expo Go (Android) to run the live app on your phone.</p>
+      </div>
+      <div id="qr-slot-desktop"></div>
+    </div>
+  </div>
+
+  <!-- FAB for mobile -->
+  <button class="fab" onclick="document.getElementById('qrModal').classList.add('active')" aria-label="Show QR Code">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/>
+      <line x1="21" y1="14" x2="21" y2="14.01"/><line x1="21" y1="21" x2="21" y2="21.01"/>
+      <line x1="17" y1="21" x2="17" y2="21.01"/><line x1="21" y1="17" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- QR Modal -->
+  <div id="qrModal" class="qr-modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
+    <div class="qr-modal">
+      <h3>Try it in Expo Go</h3>
+      <p>Scan with the Camera app (iOS) or Expo Go (Android)</p>
+      <div id="qr-slot-mobile"></div>
+      <button class="qr-modal-close" onclick="document.getElementById('qrModal').classList.remove('active')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Iframe source ─────────────────────────────────────────────────────
+    // Default: production @otfdashkit/ui-native storybook URL.
+    // Override via `?src=<url>` query param — useful in local dev to point
+    // at http://localhost:3010 without rebuilding this file.
+    const DEFAULT_KIT_URL = 'https://native.otf-kit.dev';
+    const params = new URLSearchParams(location.search);
+    const kitUrl = params.get('src') || DEFAULT_KIT_URL;
+    document.getElementById('kit-iframe').src = kitUrl;
+
+    // ── QR code ───────────────────────────────────────────────────────────
+    // Set ?qr=<full qr.expo.dev URL> to enable the QR preview, or wire it
+    // permanently by setting EAS_QR_URL below after `eas update --channel
+    // preview`. Without one of these, the card shows a placeholder.
+    const EAS_QR_URL = ''; // e.g. 'https://qr.expo.dev/eas-update?projectId=...&groupId=...&slug=exp'
+    const qrUrl = params.get('qr') || EAS_QR_URL;
+
+    function renderQr(slotId) {
+      const slot = document.getElementById(slotId);
+      if (!slot) return;
+      if (qrUrl) {
+        slot.innerHTML = `<div class="qr-embed-wrap">
+          <iframe src="${qrUrl}" style="border:0;width:100%;height:100%;border-radius:12px;background:#fff;"></iframe>
+        </div>`;
+      } else {
+        slot.innerHTML = `<div class="qr-placeholder">
+          <p>QR preview disabled.<br><br>Run <code>eas update --channel preview</code> on the kit, then set <code>EAS_QR_URL</code> in <code>index.html</code> (or pass <code>?qr=&lt;url&gt;</code>).</p>
+        </div>`;
+      }
+    }
+    renderQr('qr-slot-desktop');
+    renderQr('qr-slot-mobile');
+  </script>
+</body>
+</html>

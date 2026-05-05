@@ -1,0 +1,10 @@
+{
+  "name": "otf-ui-native-storybook-preview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static landing page that shows the @otfdashkit/ui-native storybook running inside a phone frame, with an Expo Go QR for native preview.",
+  "scripts": {
+    "dev": "npx serve . -l 4001",
+    "deploy": "bash -c 'set -a && [ -f .env ] && source .env && set +a; npx wrangler pages deploy . --project-name otf-ui-native-storybook-preview --commit-dirty=true --branch=main'"
+  }
+}
