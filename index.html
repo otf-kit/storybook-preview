@@ -301,7 +301,7 @@
     // Default: production @otf/ui-native storybook URL.
     // Override via `?src=<url>` query param — useful in local dev to point
     // at http://localhost:3010 without rebuilding this file.
-    const DEFAULT_KIT_URL = 'https://otf-ui-native-storybook.pages.dev';
+    const DEFAULT_KIT_URL = 'https://native.otf-kit.dev';
     const params = new URLSearchParams(location.search);
     const kitUrl = params.get('src') || DEFAULT_KIT_URL;
     document.getElementById('kit-iframe').src = kitUrl;

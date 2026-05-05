@@ -16,7 +16,7 @@ npm run dev
 # → http://localhost:4001
 ```
 
-By default the iframe loads `https://otf-ui-native-storybook.pages.dev`. To point at a local storybook dev server:
+By default the iframe loads `https://native.otf-kit.dev`. To point at a local storybook dev server:
 
 ```bash
 # Terminal 1: actual storybook
@@ -33,7 +33,7 @@ Cloudflare Pages, project `otf-ui-native-storybook-preview`. Reads credentials f
 ```bash
 cd apps/ui-native-storybook-preview
 npm run deploy
-# → https://otf-ui-native-storybook-preview.pages.dev
+# → https://native-preview.otf-kit.dev
 ```
 
 First-time setup:
@@ -46,14 +46,14 @@ npm run deploy
 
 ## Why a separate package
 
-The storybook is the product (the actual responsive component browser at `otf-ui-native-storybook.pages.dev`). This package is **decoration** — wraps the storybook URL in a phone frame for the marketing landing page. Same reasoning as `kits/fitness-kit-preview/`:
+The storybook is the product (the actual responsive component browser at `native.otf-kit.dev`). This package is **decoration** — wraps the storybook URL in a phone frame for the marketing landing page. Same reasoning as `kits/fitness-kit-preview/`:
 - Excluded from pnpm workspace via `!apps/ui-native-storybook-preview` (avoids React #527 dual-instance crashes)
 - Pure static HTML — no JS deps, no build step
 
 ## Recipe — see fitness-kit-preview
 
 All design recipes (Manus-style SVG geometry, landing-matched grid bg, iframe full-bleed rule, QR card centering) are documented in [`kits/fitness-kit-preview/README.md`](../../kits/fitness-kit-preview/README.md). This package is a near-identical copy with two changes:
-1. `DEFAULT_KIT_URL` → `https://otf-ui-native-storybook.pages.dev`
+1. `DEFAULT_KIT_URL` → `https://native.otf-kit.dev`
 2. Title + description text
 
 Don't drift from that recipe — copy fixes both ways.
