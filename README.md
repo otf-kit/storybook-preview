@@ -1,4 +1,4 @@
-# @otf/ui-native — Storybook Preview
+# @otfdashkit/ui-native — Storybook Preview
 
 Standalone marketing/preview shell for [`apps/ui-native-storybook`](../ui-native-storybook). Same recipe as [`kits/fitness-kit-preview`](../../kits/fitness-kit-preview) — the canonical kit-preview pattern.
 
