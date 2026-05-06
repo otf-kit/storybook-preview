@@ -1,67 +1,72 @@
-# @otfdashkit/ui-native — Storybook Preview
+<h1 align="center">@otfdashkit / storybook-preview</h1>
 
-Standalone marketing/preview shell for [`apps/ui-native-storybook`](../ui-native-storybook). Same recipe as [`kits/fitness-kit-preview`](../../kits/fitness-kit-preview) — the canonical kit-preview pattern.
+<p align="center">
+  Static phone-frame wrapper around the live <code>@otfdashkit/ui-native</code> storybook.<br/>
+  Pure HTML &mdash; one file, no build step, deploys to Cloudflare Pages.
+</p>
 
-A single static `index.html` that:
+<p align="center">
+  <a href="https://native.otf-kit.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/live-native.otf--kit.dev-000?style=flat-square" alt="live">
+  </a>
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="MIT License">
+  <img src="https://img.shields.io/badge/zero%20deps-yes-000?style=flat-square" alt="zero deps">
+  <img src="https://img.shields.io/badge/host-Cloudflare%20Pages-000?style=flat-square" alt="Cloudflare Pages">
+</p>
 
-- Renders the storybook's live web URL inside an iPhone-shaped SVG mockup
-- Pairs it with an Expo Go QR card so visitors can run the live storybook on their phone
-- Falls back to a floating QR-modal trigger on viewports < 900px
+---
+
+## Preview
+
+<p align="center">
+  <a href="https://native.otf-kit.dev/" target="_blank">
+    <img src="https://api.microlink.io/?url=https%3A%2F%2Fnative.otf-kit.dev%2F&screenshot=true&meta=false&embed=screenshot.url&waitForTimeout=3000" alt="Storybook preview frame" width="100%" />
+  </a>
+</p>
+
+<p align="center">
+  <b><a href="https://native.otf-kit.dev/">native.otf-kit.dev</a></b><br/>
+  <sub>Two-bezel iPhone-shaped SVG wrapping the live native storybook iframe, with an Expo Go QR pairing card for real-device preview.</sub>
+</p>
+
+> [!NOTE]
+> This package is **a single static `index.html`** &mdash; no build step, no JS dependencies. Pure decoration for embedding the storybook on marketing surfaces.
 
 ## Run locally
 
 ```bash
-cd apps/ui-native-storybook-preview
 npm run dev
 # → http://localhost:4001
 ```
 
-By default the iframe loads `https://native.otf-kit.dev`. To point at a local storybook dev server:
+By default the iframe loads `https://native.otf-kit.dev`. Override via query string:
 
 ```bash
-# Terminal 1: actual storybook
-cd ../ui-native-storybook && npm run dev
-
-# Terminal 2: preview frame, override iframe src via query
 open "http://localhost:4001?src=http://localhost:3010"
 ```
 
-## Deploy
+## Deploy to Cloudflare Pages
 
-Cloudflare Pages, project `otf-ui-native-storybook-preview`. Reads credentials from repo-root `.env` (`CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_API_TOKEN`).
+1. Sign up at [Cloudflare](https://dash.cloudflare.com) (free tier is enough)
+2. Get your **Account ID** (right sidebar of dashboard) and an **API token** (Profile → API Tokens → Create Token → "Edit Cloudflare Workers" template)
+3. `cp .env.example .env` and fill both vars
+4. `npm run deploy`
 
-```bash
-cd apps/ui-native-storybook-preview
-npm run deploy
-# → https://native-preview.otf-kit.dev
-```
+First deploy lands at `https://otf-ui-native-storybook-preview.pages.dev` &mdash; then point a custom domain (e.g. `native.otf-kit.dev`) at it from the Pages dashboard.
 
-First-time setup:
+## How the phone frame works
 
-```bash
-set -a && . ../../.env && set +a
-npx wrangler pages project create otf-ui-native-storybook-preview --production-branch main
-npm run deploy
-```
+The frame is a Manus-style two-bezel SVG (`475×998` viewBox) with a `<foreignObject>` containing the iframe. The iframe sits at `y=78` so the dynamic island reads as iOS hardware over a black strip &mdash; content begins below it cleanly without needing safe-area padding inside the storybook itself.
 
-## Why a separate package
+> [!TIP]
+> To re-skin the frame, edit the SVG `<rect>` fills inside `index.html`. Everything else &mdash; layout, QR card, iframe geometry &mdash; cascades from the same file.
 
-The storybook is the product (the actual responsive component browser at `native.otf-kit.dev`). This package is **decoration** — wraps the storybook URL in a phone frame for the marketing landing page. Same reasoning as `kits/fitness-kit-preview/`:
-- Excluded from pnpm workspace via `!apps/ui-native-storybook-preview` (avoids React #527 dual-instance crashes)
-- Pure static HTML — no JS deps, no build step
+## Related
 
-## Recipe — see fitness-kit-preview
+- [`@otfdashkit/sdk`](https://github.com/otf-kit/sdk) &mdash; the SDK whose native storybook this frame wraps
+- [`saas-dashboard`](https://github.com/otf-kit/saas-dashboard) &mdash; web reference app
+- [`fitness-kit`](https://github.com/otf-kit/fitness-kit) &mdash; mobile reference app
 
-All design recipes (Manus-style SVG geometry, landing-matched grid bg, iframe full-bleed rule, QR card centering) are documented in [`kits/fitness-kit-preview/README.md`](../../kits/fitness-kit-preview/README.md). This package is a near-identical copy with two changes:
-1. `DEFAULT_KIT_URL` → `https://native.otf-kit.dev`
-2. Title + description text
+## License
 
-Don't drift from that recipe — copy fixes both ways.
-
-## Dynamic island clearance — iframe at SVG y=78 (no kit-side shim)
-
-This preview uses the same approach as `apps/landing/components/otf/ComponentDetail.tsx`'s `MobilePreview`: the foreignObject is at `y="78" height="906"` instead of `y="13.67" height="970"`. The iframe physically starts BELOW the dynamic island, and the 64px strip above it shows the SVG rect's `fill="black"` — pure black, where iOS' status bar would sit.
-
-This means the storybook itself needs **no** `WebSafeAreaShim` — content sits at the top of the iframe naturally. Cleaner than fitness-kit's full-bleed-iframe approach (which requires the kit to add safe-area padding to clear the island).
-
-Different from `kits/fitness-kit-preview/` which uses `y="13.67"` with a kit-side `WebSafeAreaShim` because fitness's welcome screen has a full-bleed hero image that's meant to extend under the dynamic island. See the kit-preview memory note for the decision rule.
+MIT
