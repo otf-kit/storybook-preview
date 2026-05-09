@@ -6,8 +6,8 @@
 </p>
 
 <p align="center">
-  <a href="https://native.otf-kit.dev/" target="_blank">
-    <img src="https://img.shields.io/badge/live-native.otf--kit.dev-000?style=flat-square" alt="live">
+  <a href="https://native-preview.otf-kit.dev/" target="_blank">
+    <img src="https://img.shields.io/badge/live-native--preview.otf--kit.dev-000?style=flat-square" alt="live">
   </a>
   <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="MIT License">
   <img src="https://img.shields.io/badge/zero%20deps-yes-000?style=flat-square" alt="zero deps">
@@ -19,13 +19,13 @@
 ## Preview
 
 <p align="center">
-  <a href="https://native.otf-kit.dev/" target="_blank">
-    <img src="https://api.microlink.io/?url=https%3A%2F%2Fnative.otf-kit.dev%2F&screenshot=true&meta=false&embed=screenshot.url&waitForTimeout=3000" alt="Storybook preview frame" width="100%" />
+  <a href="https://native-preview.otf-kit.dev/" target="_blank">
+    <img src="https://api.microlink.io/?url=https%3A%2F%2Fnative-preview.otf-kit.dev%2F&screenshot=true&meta=false&embed=screenshot.url&waitForTimeout=3000" alt="Storybook preview shell" width="100%" />
   </a>
 </p>
 
 <p align="center">
-  <b><a href="https://native.otf-kit.dev/">native.otf-kit.dev</a></b><br/>
+  <b><a href="https://native-preview.otf-kit.dev/">native-preview.otf-kit.dev</a></b><br/>
   <sub>Two-bezel iPhone-shaped SVG wrapping the live native storybook iframe, with an Expo Go QR pairing card for real-device preview.</sub>
 </p>
 
@@ -52,7 +52,7 @@ open "http://localhost:4001?src=http://localhost:3010"
 3. `cp .env.example .env` and fill both vars
 4. `npm run deploy`
 
-First deploy lands at `https://otf-ui-native-storybook-preview.pages.dev` &mdash; then point a custom domain (e.g. `native.otf-kit.dev`) at it from the Pages dashboard.
+First deploy lands at `https://otf-ui-native-storybook-preview.pages.dev` &mdash; then point the `native-preview.otf-kit.dev` custom domain at it from the Pages dashboard. The bare showcase lives at `native.otf-kit.dev` (project `otf-ui-native-storybook`); the iframe in this shell loads that URL.
 
 ## How the phone frame works
 

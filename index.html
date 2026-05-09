@@ -269,8 +269,8 @@
 
     <div class="qr-card">
       <div class="qr-card-text">
-        <h2>Try it in Expo Go (SDK 54)</h2>
-        <p>Scan the QR with the Camera app (iOS) or Expo Go (Android) to run the live app on your phone.</p>
+        <h2 id="qr-card-title">Try it in Expo Go (SDK 54)</h2>
+        <p id="qr-card-subtitle">Scan the QR with the Camera app (iOS) or Expo Go (Android) to run the live app on your phone.</p>
       </div>
       <div id="qr-slot-desktop"></div>
     </div>
@@ -289,8 +289,8 @@
   <!-- QR Modal -->
   <div id="qrModal" class="qr-modal-overlay" onclick="if(event.target===this)this.classList.remove('active')">
     <div class="qr-modal">
-      <h3>Try it in Expo Go</h3>
-      <p>Scan with the Camera app (iOS) or Expo Go (Android)</p>
+      <h3 id="qr-modal-title">Try it in Expo Go</h3>
+      <p id="qr-modal-subtitle">Scan with the Camera app (iOS) or Expo Go (Android)</p>
       <div id="qr-slot-mobile"></div>
       <button class="qr-modal-close" onclick="document.getElementById('qrModal').classList.remove('active')">Close</button>
     </div>
@@ -307,27 +307,116 @@
     document.getElementById('kit-iframe').src = kitUrl;
 
     // ── QR code ───────────────────────────────────────────────────────────
-    // Set ?qr=<full qr.expo.dev URL> to enable the QR preview, or wire it
-    // permanently by setting EAS_QR_URL below after `eas update --channel
-    // preview`. Without one of these, the card shows a placeholder.
-    const EAS_QR_URL = 'https://qr.expo.dev/eas-update?projectId=31d0aa44-4713-44d9-91aa-c2e2c58c08ad&runtimeVersion=exposdk%3A54.0.0&channel=preview'; // e.g. 'https://qr.expo.dev/eas-update?projectId=...&groupId=...&slug=exp'
-    const qrUrl = params.get('qr') || EAS_QR_URL;
+    // ONE QR works for both iPhone + Android. The qr.expo.dev/eas-update
+    // URL is platform-agnostic: iOS Camera deep-links into the preview
+    // client (or shows an install prompt), Android Expo Go scans the same
+    // QR and loads the bundle directly.
+    //
+    // Per-route QRs append &deepLink=<scheme>:///<path> so the app deep-
+    // links straight to the component the visitor was viewing in the
+    // iframe. The scheme matches `apps/ui-native-showcase/app.json` →
+    // `expo.scheme` ("otf-uinative-showcase").
+    //
+    // The QR card is shown for EVERY route — the goal is to get visitors
+    // onto the real native experience for any component, not just the
+    // native-only ones.
+    //
+    // Override via ?qr=<url> for ad-hoc testing.
+    const EAS_QR_URL_BASE = 'https://qr.expo.dev/eas-update?projectId=31d0aa44-4713-44d9-91aa-c2e2c58c08ad&runtimeVersion=exposdk%3A54.0.0&channel=preview';
+    const APP_SCHEME = 'otf-uinative-showcase';
+    const qrOverride = params.get('qr');
 
-    function renderQr(slotId) {
+    // Title-case a kebab-case slug. `wheel-picker` -> `Wheel Picker`.
+    function titleFromSlug(slug) {
+      return slug
+        .split('-')
+        .filter(Boolean)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(' ');
+    }
+
+    // Derive `{ title, subtitle }` from any expo-router path.
+    //   /                            -> 'OTF Native UI'
+    //   /index, /settings            -> '<Title>'
+    //   /patterns/shockwave          -> 'Shockwave' (last segment)
+    //   /primitives/button           -> 'Button'
+    function metaFor(path) {
+      if (!path || path === '/') {
+        return {
+          title: 'Try OTF Native UI on your phone',
+          subtitle: 'Scan with the Camera app (iOS) or Expo Go (Android) to launch the preview app and browse every component on a real device.',
+        };
+      }
+      const segments = path.replace(/^\/+|\/+$/g, '').split('/');
+      const last = segments[segments.length - 1];
+      if (!last) {
+        return {
+          title: 'Try OTF Native UI on your phone',
+          subtitle: 'Scan to launch the preview app on iOS or Android.',
+        };
+      }
+      const title = titleFromSlug(last);
+      return {
+        title: 'Try ' + title + ' on your phone',
+        subtitle: 'Scan to launch the OTF preview app — it deep-links straight to ' + title + ' on your device.',
+      };
+    }
+
+    function buildQrUrl(path) {
+      if (qrOverride) return qrOverride;
+      if (!path || path === '/') return EAS_QR_URL_BASE;
+      const sep = EAS_QR_URL_BASE.includes('?') ? '&' : '?';
+      // Triple-slash so `path` is treated as an absolute route by
+      // expo-router: <scheme>:///<path>
+      const deepLink = encodeURIComponent(APP_SCHEME + ':///' + path.replace(/^\/+/, ''));
+      return EAS_QR_URL_BASE + sep + 'deepLink=' + deepLink;
+    }
+
+    let lastRenderedUrl = null;
+    function renderQrInto(slotId, url) {
       const slot = document.getElementById(slotId);
       if (!slot) return;
-      if (qrUrl) {
-        slot.innerHTML = `<div class="qr-embed-wrap">
-          <iframe src="${qrUrl}" style="border:0;width:100%;height:100%;border-radius:12px;background:#fff;"></iframe>
-        </div>`;
+      if (url) {
+        slot.innerHTML = '<div class="qr-embed-wrap">' +
+          '<iframe src="' + url + '" style="border:0;width:100%;height:100%;border-radius:12px;background:#fff;"></iframe>' +
+          '</div>';
       } else {
-        slot.innerHTML = `<div class="qr-placeholder">
-          <p>QR preview disabled.<br><br>Run <code>eas update --channel preview</code> on the kit, then set <code>EAS_QR_URL</code> in <code>index.html</code> (or pass <code>?qr=&lt;url&gt;</code>).</p>
-        </div>`;
+        slot.innerHTML = '<div class="qr-placeholder">' +
+          '<p>QR preview disabled.<br><br>Run <code>eas update --channel preview</code> on the kit, then set <code>EAS_QR_URL_BASE</code> in <code>index.html</code> (or pass <code>?qr=&lt;url&gt;</code>).</p>' +
+          '</div>';
       }
     }
-    renderQr('qr-slot-desktop');
-    renderQr('qr-slot-mobile');
+
+    function applyRoute(path) {
+      const meta = metaFor(path);
+      const url = buildQrUrl(path);
+      document.getElementById('qr-card-title').textContent = meta.title;
+      document.getElementById('qr-card-subtitle').textContent = meta.subtitle;
+      document.getElementById('qr-modal-title').textContent = meta.title;
+      document.getElementById('qr-modal-subtitle').textContent = meta.subtitle;
+      // Only re-render the iframe when the URL actually changed — avoids
+      // tearing down the qr.expo.dev embed unnecessarily on every nav.
+      if (url !== lastRenderedUrl) {
+        renderQrInto('qr-slot-desktop', url);
+        renderQrInto('qr-slot-mobile', url);
+        lastRenderedUrl = url;
+      }
+    }
+
+    // Initial render — no path yet, show the generic home QR.
+    applyRoute('/');
+
+    // Listen for route changes broadcast by the showcase iframe. Payload
+    // shape: { source: 'otf-ui-native-showcase', type: 'otf-route', path }.
+    // We accept any origin; the source tag is enough to filter spam.
+    window.addEventListener('message', (event) => {
+      const data = event.data;
+      if (!data || typeof data !== 'object') return;
+      if (data.source !== 'otf-ui-native-showcase') return;
+      if (data.type !== 'otf-route') return;
+      if (typeof data.path !== 'string') return;
+      applyRoute(data.path);
+    });
   </script>
 </body>
 </html>
