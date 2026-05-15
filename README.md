@@ -70,3 +70,7 @@ The frame is a Manus-style two-bezel SVG (`475×998` viewBox) with a `<foreignOb
 ## License
 
 MIT
+
+---
+
+Project home: [otf-kit.dev](https://otf-kit.dev) — the full OTF catalog.
