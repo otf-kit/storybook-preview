@@ -43,7 +43,7 @@
       justify-content: center;
       gap: 32px;
       width: 100%;
-      height: 100vh;
+      height: 100dvh;
       padding: 0 16px;
       position: relative;
       z-index: 1;
@@ -223,6 +223,7 @@
     .qr-modal-close:hover { background: #1a1a1a; }
 
     /* ── Responsive ── */
+    /* Tablets (600–900px): stack the phone frame above a QR FAB. */
     @media (max-width: 900px) {
       .landing {
         flex-direction: column;
@@ -230,18 +231,29 @@
         padding: 16px;
       }
       .phone-frame {
-        height: calc(100vh - 32px);
+        height: calc(100dvh - 32px);
         max-width: calc(100vw - 32px);
       }
       .qr-card { display: none; }
       .fab { display: flex; }
     }
 
-    @media (max-width: 500px) {
-      .landing { padding: 12px; }
-      .phone-frame {
-        height: calc(100vh - 24px);
-        max-width: calc(100vw - 24px);
+    /* Phones (≤600px): drop the fake phone frame entirely and run the live app
+       FULL-SCREEN. You're already holding a phone — wrapping the app in a phone
+       mockup just crops it (bezels + notch + 100vh overflow) and wastes the
+       screen. The QR FAB stays for jumping into Expo Go. */
+    #kit-iframe-mobile { display: none; }
+    @media (max-width: 600px) {
+      .landing { display: none; }
+      #kit-iframe-mobile {
+        display: block;
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        border: 0;
+        background: #000;
+        z-index: 1;
       }
     }
   </style>
@@ -276,6 +288,9 @@
     </div>
   </div>
 
+  <!-- Mobile-only: the live app full-screen (no phone frame — you're already on a phone). -->
+  <iframe id="kit-iframe-mobile" title="OTF UI Native live preview" scrolling="no" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope"></iframe>
+
   <!-- FAB for mobile -->
   <button class="fab" onclick="document.getElementById('qrModal').classList.add('active')" aria-label="Show QR Code">
     <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -304,7 +319,10 @@
     const DEFAULT_KIT_URL = 'https://native.otf-kit.dev';
     const params = new URLSearchParams(location.search);
     const kitUrl = params.get('src') || DEFAULT_KIT_URL;
-    document.getElementById('kit-iframe').src = kitUrl;
+    // Run the app full-screen on phones (no fake phone frame), framed on desktop.
+    // Only the visible iframe gets a src so the app loads once, not twice.
+    const isPhone = window.matchMedia('(max-width: 600px)').matches;
+    document.getElementById(isPhone ? 'kit-iframe-mobile' : 'kit-iframe').src = kitUrl;
 
     // ── QR code ───────────────────────────────────────────────────────────
     // ONE QR works for both iPhone + Android. The qr.expo.dev/eas-update
