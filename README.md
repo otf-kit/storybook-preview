@@ -1,6 +1,6 @@
 # OTF Native Preview
 
-**A static phone frame around the live OTF UI Native component gallery, with an Expo Go QR card.**
+**A static phone frame around the live OTF UI Native component gallery, with a QR card for the app download page.**
 
 [Live preview](https://native-preview.otf-kit.dev/) · [Full gallery](https://native.otf-kit.dev/) · [Native package](https://www.npmjs.com/package/@otfdashkit/ui-native)
 
