@@ -5,21 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@otfdashkit/ui-native — Storybook Preview</title>
   <meta name="description" content="Live preview of the @otfdashkit/ui-native component storybook running in a phone frame, with a QR to download the OTF Kits app for native preview.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400&family=Geist+Mono:wght@400&family=Inter:wght@400;500&display=swap">
   <style>
+    /* OTF brand lock (copy of @otfdashkit/tokens brand.css :root). Same values in every preview shell. */
+    :root {
+      --otf-bg: #0a0a0a;
+      --otf-card: #111111;
+      --otf-border: #1f1f1f;
+      --otf-hairline: rgba(255, 255, 255, 0.12);
+      --otf-fg: #f0ede9;
+      --otf-fg-muted: rgba(240, 237, 233, 0.58);
+      --otf-muted: #9e9e9e;
+      --otf-accent: #f97316;
+      --otf-live: #3fcf8e;
+      --otf-btn-bg: #f0ede9;
+      --otf-btn-fg: #11110f;
+      --otf-radius-btn: 10px;
+      --otf-radius-card: 12px;
+      --otf-font-display: "Geist", "Geist Fallback", ui-sans-serif, system-ui, sans-serif;
+      --otf-font-body: "Inter", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+      --otf-font-mono: "Geist Mono", "GeistMono", ui-monospace, monospace;
+      --otf-display-weight: 400;
+      --otf-hero-tracking: -0.055em;
+      --otf-hero-lh: 1.05;
+      --otf-display-tracking: -0.03em;
+      --otf-display-lh: 1.1;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      /* Slightly warm dark — softer than pure #0a0a0a, makes the grid
-         checks read more clearly without losing the dark vibe. */
-      background-color: #1a1816;
+      background-color: var(--otf-bg);
       background-image:
-        linear-gradient(90deg, #ffffff0d 1px, #0000 1px),
-        linear-gradient(#ffffff0d 1px, #0000 1px);
+        linear-gradient(90deg, color-mix(in srgb, var(--otf-fg) 5%, transparent) 1px, #0000 1px),
+        linear-gradient(color-mix(in srgb, var(--otf-fg) 5%, transparent) 1px, #0000 1px);
       background-size: 32px 32px;
       background-attachment: fixed;
       min-height: 100vh;
       overflow: hidden;
       position: relative;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--otf-font-body);
     }
     /* Gradient overlay tones the grid down toward the bottom. Color-mixed
        in oklab against the same bg so the fade reads cleanly. */
@@ -29,8 +54,8 @@
       inset: 0;
       background: linear-gradient(
         to bottom in oklab,
-        color-mix(in oklab, #1a1816 20%, transparent),
-        color-mix(in oklab, #1a1816 60%, transparent)
+        color-mix(in oklab, var(--otf-bg) 20%, transparent),
+        color-mix(in oklab, var(--otf-bg) 60%, transparent)
       );
       pointer-events: none;
       z-index: 0;
@@ -67,9 +92,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 20px;
+      background: var(--otf-card);
+      border: 1px solid var(--otf-border);
+      border-radius: var(--otf-radius-card);
       padding: 20px;
       max-width: 240px;
       gap: 16px;
@@ -82,13 +107,15 @@
       align-items: center;
     }
     .qr-card h2 {
-      color: #fff;
+      color: var(--otf-fg);
+      font-family: var(--otf-font-display);
       font-size: 16px;
-      font-weight: 700;
-      line-height: 1.3;
+      font-weight: var(--otf-display-weight);
+      letter-spacing: var(--otf-display-tracking);
+      line-height: var(--otf-display-lh);
     }
     .qr-card p {
-      color: #888;
+      color: var(--otf-fg-muted);
       font-size: 12px;
       line-height: 1.45;
     }
@@ -97,18 +124,19 @@
       align-items: center;
       justify-content: center;
       padding: 10px 20px;
-      background: transparent;
-      border: 1px solid #333;
-      border-radius: 10px;
-      color: #fff;
+      background: var(--otf-btn-bg);
+      border: 0;
+      border-radius: var(--otf-radius-btn);
+      color: var(--otf-btn-fg);
+      font-family: var(--otf-font-body);
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.2s, border-color 0.2s;
+      transition: opacity 0.2s;
       width: fit-content;
     }
-    .qr-card-btn:hover { background: #1a1a1a; border-color: #444; }
+    .qr-card-btn:hover { opacity: 0.88; }
     .qr-embed-wrap {
       width: 192px;
       height: 224px;
@@ -121,8 +149,8 @@
       width: 192px;
       height: 224px;
       border-radius: 14px;
-      background: #1a1a1a;
-      border: 1px dashed #333;
+      background: var(--otf-card);
+      border: 1px dashed var(--otf-hairline);
       align-self: center;
       flex-shrink: 0;
       display: flex;
@@ -133,14 +161,15 @@
     }
     .qr-placeholder p {
       font-size: 12px;
-      color: #666;
+      color: var(--otf-muted);
       line-height: 1.5;
     }
     .qr-placeholder code {
-      background: #222;
+      background: var(--otf-border);
       padding: 2px 6px;
       border-radius: 4px;
-      color: #aaa;
+      font-family: var(--otf-font-mono);
+      color: var(--otf-fg-muted);
       font-size: 11px;
     }
 
@@ -153,7 +182,7 @@
       width: 56px;
       height: 56px;
       border-radius: 16px;
-      background: #fff;
+      background: var(--otf-btn-bg);
       border: none;
       cursor: pointer;
       align-items: center;
@@ -180,9 +209,9 @@
     }
     .qr-modal-overlay.active { display: flex; }
     .qr-modal {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 20px;
+      background: var(--otf-card);
+      border: 1px solid var(--otf-border);
+      border-radius: var(--otf-radius-card);
       padding: 28px;
       max-width: 320px;
       width: 100%;
@@ -197,13 +226,16 @@
       to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .qr-modal h3 {
-      color: #fff;
+      color: var(--otf-fg);
+      font-family: var(--otf-font-display);
       font-size: 18px;
-      font-weight: 700;
+      font-weight: var(--otf-display-weight);
+      letter-spacing: var(--otf-display-tracking);
+      line-height: var(--otf-display-lh);
       text-align: center;
     }
     .qr-modal p {
-      color: #888;
+      color: var(--otf-fg-muted);
       font-size: 13px;
       text-align: center;
       line-height: 1.5;
@@ -211,16 +243,17 @@
     .qr-modal .qr-embed-wrap, .qr-modal .qr-placeholder { width: 220px; height: 260px; }
     .qr-modal-close {
       padding: 10px 28px;
-      background: transparent;
-      border: 1px solid #333;
-      border-radius: 10px;
-      color: #fff;
+      background: var(--otf-card);
+      border: 1px solid var(--otf-hairline);
+      border-radius: var(--otf-radius-btn);
+      color: var(--otf-fg);
+      font-family: var(--otf-font-body);
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
       transition: background 0.2s;
     }
-    .qr-modal-close:hover { background: #1a1a1a; }
+    .qr-modal-close:hover { background: color-mix(in srgb, var(--otf-fg) 6%, var(--otf-card)); }
 
     /* ── Responsive ── */
     /* Tablets (600–900px): stack the phone frame above a QR FAB. */
@@ -333,17 +366,10 @@
     // iOS App Store soon). It is NOT an Expo deep link.
     //
     // ONE QR for every route: it's one app, so the QR doesn't change per
-    // screen. We use a QR-image API (api.qrserver.com) to render the code
-    // for the download URL.
-    //
-    // Override via ?qr=<url> for ad-hoc testing.
-    const DOWNLOAD_URL = 'https://otf-kit.dev/download';
-    const qrOverride = params.get('qr');
-
+    // screen. The code for https://otf-kit.dev/download is pre-rendered at each
+    // size we show and hosted on the CDN (no third-party QR API on the page).
     function qrImageUrl(size) {
-      const target = qrOverride || DOWNLOAD_URL;
-      return 'https://api.qrserver.com/v1/create-qr-code/?size=' + size + 'x' + size +
-        '&margin=8&data=' + encodeURIComponent(target);
+      return 'https://cdn.otf-kit.dev/img/shells/qr-otf-download-' + size + '.png';
     }
 
     let qrRendered = false;
