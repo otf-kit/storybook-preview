@@ -74,18 +74,23 @@
       z-index: 1;
     }
 
+    /* The site's DevicePhone (apps/landing/components/template-detail/DevicePhone.tsx): same frame, inset, island and 9:41 bar. */
     .phone-frame {
-      height: 96vh;
-      aspect-ratio: 475 / 998;
+      width: calc(96vh * 503 / 1050);
+      aspect-ratio: 503 / 1050;
       flex-shrink: 0;
+      position: relative;
+      container-type: inline-size;
     }
-    .phone-frame svg {
-      width: 100%;
-      height: 100%;
-      /* Subtle lift — was 0 20px 40px rgba(0,0,0,0.6) which read heavy
-         against the darker bg. Lighter offset + blur + opacity now. */
-      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.35));
-    }
+    .dp-shadow { position: absolute; inset: 0; border-radius: 17.5cqw; box-shadow: 0 1.5cqw 12cqw rgba(0,0,0,.32); }
+    .dp-screen { position: absolute; overflow: hidden; left: 3.58cqw; top: 3.58cqw; width: 92.84cqw; height: 201.79cqw; border-radius: 13.92cqw; background: var(--otf-bg); }
+    .dp-screen iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: transparent; }
+    .dp-bar { position: absolute; left: 0; right: 0; top: 0; z-index: 10; height: 12.92cqw; color: #fff; pointer-events: none; }
+    .light .dp-bar { color: #000; }
+    .dp-time { position: absolute; left: 13.92cqw; top: 4.97cqw; font-size: 3.95cqw; line-height: 1; letter-spacing: -0.01em; font-weight: 600; font-family: -apple-system, 'SF Pro Text', 'SF Pro', system-ui, sans-serif; }
+    .dp-icons { position: absolute; left: 64.41cqw; top: 4.37cqw; width: 20.87cqw; height: 4.97cqw; background-color: currentColor; -webkit-mask: url(https://cdn.otf-kit.dev/img/device/iphone-status-icons-20261023.webp) 0 0 / 100% 100%; mask: url(https://cdn.otf-kit.dev/img/device/iphone-status-icons-20261023.webp) 0 0 / 100% 100%; }
+    .dp-island { position: absolute; z-index: 20; max-width: none; left: 32.41cqw; top: 2.98cqw; width: 27.83cqw; height: 8.55cqw; pointer-events: none; }
+    .dp-frame { position: absolute; z-index: 30; max-width: none; left: -0.6cqw; top: 0; width: 101.19cqw; height: auto; pointer-events: none; }
 
     /* ── QR Card (desktop) ── slimmer so the phone gets more room */
     .qr-card {
@@ -263,10 +268,7 @@
         gap: 0;
         padding: 16px;
       }
-      .phone-frame {
-        height: calc(100dvh - 32px);
-        max-width: calc(100vw - 32px);
-      }
+      .phone-frame { width: min(calc((100dvh - 32px) * 503 / 1050), calc(100vw - 32px)); }
       .qr-card { display: none; }
       .fab { display: flex; }
     }
@@ -294,22 +296,13 @@
 <body>
   <div class="landing">
     <div class="phone-frame">
-      <svg viewBox="0 0 475 998" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <clipPath id="clip0_otf_phone"><rect x="13.6691" y="13.6691" width="447.662" height="970.504" rx="66.0671" fill="white"/></clipPath>
-        </defs>
-        <g clip-path="url(#clip0_otf_phone)">
-          <rect x="13.6691" y="13.6691" width="447.662" height="970.504" rx="66.0671" fill="black"/>
-          <foreignObject x="13.6691" y="13.6691" width="447.662" height="970.504">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;overflow:hidden;border-radius:66px;background:black;">
-              <iframe id="kit-iframe" style="border:0;width:100%;height:100%;background:black;display:block;" scrolling="no" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope"></iframe>
-            </div>
-          </foreignObject>
-        </g>
-        <rect x="164.598" y="26.575" width="142.386" height="41.7704" rx="20.8852" fill="black"/>
-        <rect x="9.68226" y="9.68226" width="455.635" height="978.477" rx="70.054" stroke="black" stroke-width="9.97362"/>
-        <rect x="2.84771" y="2.84771" width="469.305" height="992.146" rx="76.8885" stroke="black" stroke-width="5.69544"/>
-      </svg>
+      <div class="dp-shadow"></div>
+      <div class="dp-screen">
+        <iframe id="kit-iframe" title="OTF UI Native components live preview" scrolling="no" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope"></iframe>
+        <div class="dp-bar" aria-hidden="true"><span class="dp-time">9:41</span><span class="dp-icons"></span></div>
+        <img class="dp-island" src="https://cdn.otf-kit.dev/img/device/iphone-status-island-20261023.webp" alt="" aria-hidden="true">
+      </div>
+      <img class="dp-frame" src="https://cdn.otf-kit.dev/img/device/iphone-cosmic-orange-frame-tight-20261023.webp" alt="" aria-hidden="true">
     </div>
 
     <div class="qr-card">
